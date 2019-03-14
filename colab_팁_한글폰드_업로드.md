@@ -10,8 +10,11 @@
 ### 팁 
 
 ##### 오류
+
+```
 import warnings
 warnings.filterwarnings('ignore')
+```
 
 ##### 그래프에 retina display 적용
 
