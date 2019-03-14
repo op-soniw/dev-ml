@@ -26,3 +26,11 @@ import matplotlib.font_manager as fm
 fontpath = '/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf'
 font = fm.FontProperties(fname=fontpath, size=9)
 ```
+
+#### 기본 글꼴 변경
+```
+import matplotlib as mpl
+mpl.font_manager._rebuild()
+mpl.pyplot.rc('font', family='NanumBarunGothic')
+```
+
