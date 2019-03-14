@@ -46,9 +46,14 @@ mpl.pyplot.rc('font', family='NanumBarunGothic')
 
 
 #### 글씨가 겹쳐보이지 않도록 rotation 추가
+```
 (ggplot(petitions)
- + aes('category')
+ + aes('category') 
+ # XY 축 변경 >> + aes(x='category', y='votes') 
+ # 서클 포인트 + aes(x='category', y='votes', fill='answer')
+ # 서클 포인트 + geom_point()
  + geom_bar(fill='green')
  + theme(text=element_text(family='NanumBarunGothic'),
         axis_text_x=element_text(rotation=60))
 )
+```
