@@ -1,3 +1,5 @@
+***본글은 [국민청원으로 파이썬 자연어처리 입문하기](https://www.youtube.com/playlist?list=PLaTc2c6yEwmrtV81ehjOI0Y8Y-HR6GN78)의 내용을 기초로 한 것입니다.***
+
 # 특정 키워드로 word2Vec 단어 유사도 보기
 
 ### Word2Vec(Word Embedding to Vector)
