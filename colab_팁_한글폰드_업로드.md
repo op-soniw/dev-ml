@@ -80,3 +80,26 @@ care = petitions[petitions['title'].str.match(p) |
            petitions['content'].str.match(p, flags=re.MULTILINE)]
 care.shape
 ```
+
+#### 구글 드라이브에서 csv 파일을 읽어오기
+
+```
+# 구글 드라이브에서 csv 파일을 읽어오기 위해 gauth 인증을 합니다.
+!pip install -U -q PyDrive
+from pydrive.auth import GoogleAuth
+from pydrive.drive import GoogleDrive
+from google.colab import auth
+from oauth2client.client import GoogleCredentials
+# Authenticate and create the PyDrive client.
+auth.authenticate_user()
+gauth = GoogleAuth()
+gauth.credentials = GoogleCredentials.get_application_default()
+drive = GoogleDrive(gauth)
+
+url ='https://drive.google.com/open?id=1d8VEAj6n83wT1YRlCrhoU_1mMSvYpXc4'
+id = url.split('=')[1]
+print(id)
+```
+
+
+
