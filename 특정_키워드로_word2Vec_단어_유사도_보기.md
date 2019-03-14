@@ -69,3 +69,242 @@ Vector Space](https://arxiv.org/pdf/1301.3781v3.pdf)
 * [한국어와 NLTK, Gensim의 만남 - PyCon Korea 2015](https://www.lucypark.kr/docs/2015-pyconkr/)
 
 
+### 설치 
+```
+!pip install soynlp
+!pip show soynlp
+
+!pip install gensim
+!pip show gensim
+
+%config InlineBackend.figure_format = 'retina'
+
+# 그래프에서 한글표현을 위해 폰트를 설치합니다.
+!apt -qq -y install fonts-nanum > /dev/null
+import matplotlib.font_manager as fm
+fontpath = '/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf'
+font = fm.FontProperties(fname=fontpath, size=9)
+
+# 기본 글꼴 변경
+import matplotlib as mpl
+mpl.font_manager._rebuild()
+mpl.pyplot.rc('font', family='NanumBarunGothic')
+```
+
+### 데이터를 판다스를 통해 읽는다 
+
+```
+downloaded = drive.CreateFile({'id':id}) 
+downloaded.GetContentFile('petition.csv')  
+df = pd.read_csv('petition.csv', index_col=0, \
+                        parse_dates=['start', 'end'])
+# 데이터의 크기가 어느정도인지 본다.
+df.shape
+```
+
+```
+p = r'.*(P2P|은행|금융|주식|증권|공매도).*'
+finance = df[df['title'].str.match(p) |
+           df['content'].str.match(p, flags=re.MULTILINE)]
+finance.shape
+```
+
+#### 텍스트 데이터 전처리
+
+```
+def preprocessing(text):
+    # 개행문자 제거
+    text = re.sub('\\\\n', ' ', text)
+    # 특수문자 제거
+    # 특수문자나 이모티콘 등은 때로는 의미를 갖기도 하지만 여기에서는 제거했습니다.
+    # text = re.sub('[?.,;:|\)*~`’!^\-_+<>@\#$%&-=#}※]', '', text)
+    # 한글, 영문, 숫자만 남기고 모두 제거하도록 합니다.
+    # text = re.sub('[^가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9]', ' ', text)
+    # 한글, 영문만 남기고 모두 제거하도록 합니다.
+    text = re.sub('[^가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z]', ' ', text)
+    return text
+```
+
+
+#### soynlp를 사용해 토큰화
+
+##### 텍스트 데이터 전처리 이해하기
+(출처 : [트위터 한국어 형태소 분석기](https://github.com/twitter/twitter-korean-text))
+
+**정규화 normalization (입니닼ㅋㅋ -> 입니다 ㅋㅋ, 샤릉해 -> 사랑해)**
+
+* 한국어를 처리하는 예시입니닼ㅋㅋㅋㅋㅋ -> 한국어를 처리하는 예시입니다 ㅋㅋ
+
+**토큰화 tokenization**
+
+* 한국어를 처리하는 예시입니다 ㅋㅋ -> 한국어Noun, 를Josa, 처리Noun, 하는Verb, 예시Noun, 입Adjective, 니다Eomi ㅋㅋKoreanParticle
+
+**어근화 stemming (입니다 -> 이다)**
+
+* 한국어를 처리하는 예시입니다 ㅋㅋ -> 한국어Noun, 를Josa, 처리Noun, 하다Verb, 예시Noun, 이다Adjective, ㅋㅋKoreanParticle
+
+**어구 추출 phrase extraction** 
+
+* 한국어를 처리하는 예시입니다 ㅋㅋ -> 한국어, 처리, 예시, 처리하는 예시
+
+Introductory Presentation: [Google Slides](https://docs.google.com/presentation/d/10CZj8ry03oCk_Jqw879HFELzOLjJZ0EOi4KJbtRSIeU/)
+
+
+#### 전처리 이전의 샘플 텍스트로 토큰화
+
+```
+tokened_title = tokenizer.tokenize(sample_title)
+tokened_title
+```
+
+#### 로그
+
+```
+import logging
+logging.basicConfig(
+    format='%(asctime)s : %(levelname)s : %(message)s', 
+    level=logging.INFO)
+```
+
+#### 초기화 및 모델 학습
+
+```
+from gensim.models import word2vec
+
+model = word2vec.Word2Vec(tokens, min_count=1)
+
+# 모델 이름을 지정하고 저장한다.
+model_name = 'names1'
+model.save(model_name)
+```
+
+#### 단어 사전수 
+
+```
+len(model.wv.vocab)
+```
+
+#### 단어 사전에서 상위
+
+```
+vocab = model.wv.vocab
+sorted(vocab, key=vocab.get, reverse=True)[:30]
+```
+
+#### 불용어
+* 가장 자주 등장하는 단어이지만 불용어에 가깝다.
+
+['수',
+ '있는',
+ '있습니다',
+ '그',
+ '이',
+ '년',
+ '합니다',
+ '하는',
+ '및',
+ '제',
+ '할',
+ '하고',
+ '더',
+ '대한',
+ '한',
+ '그리고',
+ '월',
+ '저는',
+ '없는',
+ '것입니다',
+ '등',
+ '일',
+ '많은',
+ '이런',
+ '것은',
+ '왜',
+ '같은',
+ '없습니다',
+ '위해']
+ 
+#### Counter로 자주 등장하는 단어 보기
+```
+from collections import Counter
+dict(Counter(vocab).most_common(20))
+``` 
+
+#### 가장 적게 등장하는 단어 보기
+
+```
+min(vocab, key=vocab.get)
+```
+
+#### word2vec에서 특정 단어, 유사단어 학습 모델에서 검색 
+```
+model.wv['주식'] 
+
+model.wv.most_similar('주식') 
+``` 
+
+#### 학습 모델에서 유사도가 없는 단어 추출 
+
+```
+model.wv.doesnt_match('부동산 증권 현금 코스닥 코스피'.split())
+```
+
+#### 단어 유사도 
+
+```
+model.wv.similarity('주식', '부동산')
+```
+
+#### 단어 유사도 시각화
+
+```
+from sklearn.manifold import TSNE
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import gensim 
+import gensim.models as g
+
+# 그래프에서 마이너스 폰트 깨지는 문제에 대한 대처
+mpl.rcParams['axes.unicode_minus'] = False
+
+model_name = '1minwords'
+model = g.Doc2Vec.load(model_name)
+
+# Doc2Vec으로 만든 모델을 가져옴
+vocab = list(model.wv.vocab)
+# 모델의 단어를 피처로 지정해 준다.
+X = model[vocab]
+
+print('Feature의 길이 {}'.format(len(X)))
+print(X[0][:10])
+tsne = TSNE(n_components=2)
+
+# 모든 단어를 그래프에 출력하면 글자가 너무 많이 겹치기 때문에 일부 단어에 대해서만 시각화
+X_tsne = tsne.fit_transform(X[:150,:])
+
+df = pd.DataFrame(X_tsne, index=vocab[:150], columns=['x', 'y'])
+df.shape
+
+# 그래프에 retina display 적용
+%config InlineBackend.figure_format = 'retina'
+
+# 나눔고딕 설치
+!apt -qq -y install fonts-nanum > /dev/null
+import matplotlib.font_manager as fm
+fontpath = '/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf'
+font = fm.FontProperties(fname=fontpath, size=9)
+
+
+fig = plt.figure()
+fig.set_size_inches(40, 20)
+ax = fig.add_subplot(1, 1, 1)
+
+ax.scatter(df['x'], df['y'])
+
+for word, pos in df.iterrows():
+    ax.annotate(word, pos, fontsize=30)
+plt.show()
+
+```
+
+
