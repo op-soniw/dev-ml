@@ -14,11 +14,15 @@ import warnings
 warnings.filterwarnings('ignore')
 
 ##### 그래프에 retina display 적용
+
+```
 %config InlineBackend.figure_format = 'retina'
+```
 
 ##### 나눔고딕 설치
+```
 !apt -qq -y install fonts-nanum > /dev/null
 import matplotlib.font_manager as fm
 fontpath = '/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf'
 font = fm.FontProperties(fname=fontpath, size=9)
-
+```
