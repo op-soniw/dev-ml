@@ -44,3 +44,11 @@ mpl.pyplot.rc('font', family='NanumBarunGothic')
 * 아래의 문서를 참고하면 **element_text**와 관련된 옵션을 볼 수 있다.
 * 참고 : [plotnine.themes.element_text — plotnine 0.3.0 documentation](http://plotnine.readthedocs.io/en/stable/generated/plotnine.themes.element_text.html)
 
+
+#### 글씨가 겹쳐보이지 않도록 rotation 추가
+(ggplot(petitions)
+ + aes('category')
+ + geom_bar(fill='green')
+ + theme(text=element_text(family='NanumBarunGothic'),
+        axis_text_x=element_text(rotation=60))
+)
