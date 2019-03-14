@@ -20,6 +20,7 @@ warnings.filterwarnings('ignore')
 ```
 
 ##### 나눔고딕 설치
+
 ```
 !apt -qq -y install fonts-nanum > /dev/null
 import matplotlib.font_manager as fm
@@ -28,6 +29,7 @@ font = fm.FontProperties(fname=fontpath, size=9)
 ```
 
 #### 기본 글꼴 변경
+
 ```
 import matplotlib as mpl
 mpl.font_manager._rebuild()
@@ -35,6 +37,7 @@ mpl.pyplot.rc('font', family='NanumBarunGothic')
 ```
 
 #### 한글폰트 사용하기
+
 * 한글이 깨져보이는 것을 해결하기 위해 한글폰트를 사용해야 한다.
 * 여기에서는 나눔바른고딕을 사용하도록 한다. 
     * 이때 폰트가 로컬 컴퓨터에 설치되어 있어야한다. 
@@ -46,6 +49,7 @@ mpl.pyplot.rc('font', family='NanumBarunGothic')
 
 
 #### 글씨가 겹쳐보이지 않도록 rotation 추가
+
 ```
 (ggplot(petitions)
  + aes('category') 
@@ -56,4 +60,23 @@ mpl.pyplot.rc('font', family='NanumBarunGothic')
  + theme(text=element_text(family='NanumBarunGothic'),
         axis_text_x=element_text(rotation=60))
 )
+```
+
+#### 단어수 
+
+```
+# 단어 수
+%time petitions['title_num_words'] = petitions['title'].apply(lambda x: len(str(x).split()))
+# 중복을 제거한 단어 수
+%time petitions['title_num_uniq_words'] = petitions['title'].apply(lambda x: len(set(str(x).split())))
+```
+
+#### 특정 단어가 들어가는 단어만
+
+```
+import re
+p = r'.*(돌봄|아이|초등|보육).*'
+care = petitions[petitions['title'].str.match(p) |
+           petitions['content'].str.match(p, flags=re.MULTILINE)]
+care.shape
 ```
